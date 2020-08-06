@@ -1,103 +1,58 @@
-Modifications:  
-the original data was modifies by:    
-Merging the training and the test sets to create one data set.        
-Extracting only the measurements on the mean and standard deviation for each measurement.        
-Useing descriptive activity names to name the activities in the data set           
-Appropriately labeling the data set with descriptive variable names.             
-Creating a second, independent tidy data set with the average of each variable for each activity and each subject.         
+# Code Book
+Coursera Data Science Specialization Course
+Getting and Cleanng Data
+Course Project
 
+# Data
+This project is an exercise in acquiring and cleaning data. The project uses data from the UCI Machine Learning Repository: Human Activity Recognition and Smart Phone Data site: Description here.. Data for the project can be downloaded here: Zip Archive.
 
+This code book relies on the source code book listed in the README.txt of the zip archive and available at the UCI link for definitions and descriptions.
 
-Descriptions:       
-  Identififiers:         
-  The first two columns - Subject and Activity - are Identifiers.         
-  Subject: the ID of the Subject        
-   Activity: the Name of the Activity performed by the subject when measurements were taken        
-   
-   
-   
+# Processing
+Step 1: Merge training and test sets to create one data set
+Data was downloaded from the source files and read in with names corresponding to the source files. Test set data were combined together by columns. Train set data were combined in the same manner. Test and train set data were combined to created the full data set (fullSet).
 
+Step 2: Extract only measurements on mean and standard deviation
+A names variable (allNames) that included the subject, activity and all feature names was created. This variable was subsetted to include only the subject, activity, and variables that included mean and standard deviation (std). This subsetted names variable was then used to extract the corresponding columns in the full data set. The result was saved as the reducedSet.
 
-Measurements         
-As mentioned above,the variables remaining are just the calculatd means and standard deviations of these sets of data   
-(Even if I do not give a detailed description of what each data value means, you can see what it means by comparing it with the original data column.)      
+Step 3: Use descriptive activities names for activity measurements
+The coded values for activity were changed to the activity name. This change was accomplished by indexing the activity_labels variable.
 
-tBodyAccMeanX      
-tBodyAccMeanY      
-tBodyAccMeanZ      
-tBodyAccStdX       
-tBodyAccStdY       
-tBodyAccStdZ       
-tGravityAccMeanX      
-tGravityAccMeanY       
-tGravityAccMeanZ       
-tGravityAccStdX       
-tGravityAccStdY        
-tGravityAccStdZ       
-tBodyAccJerkMeanX       
-tBodyAccJerkMeanY        
-tBodyAccJerkMeanZ        
-tBodyAccJerkStdX         
-tBodyAccJerkStdY      
-tBodyAccJerkStdZ      
-tBodyGyroMeanX       
-tBodyGyroMeanY       
-tBodyGyroMeanZ        
-tBodyGyroStdX          
-tBodyGyroStdY          
-tBodyGyroStdZ         
-tBodyGyroJerkMeanX           
-tBodyGyroJerkMeanY       
-tBodyGyroJerkMeanZ      
-tBodyGyroJerkStdX      
-tBodyGyroJerkStdY       
-tBodyGyroJerkStdZ       
-tBodyAccMagMean       
-tBodyAccMagStd       
-tGravityAccMagMean       
-tGravityAccMagStd       
-tBodyAccJerkMagMean       
-tBodyAccJerkMagStd        
-tBodyGyroMagMean       
-tBodyGyroMagStd       
-tBodyGyroJerkMagMean        
-tBodyGyroJerkMagStd      
-fBodyAccMeanX       
-fBodyAccMeanY      
-fBodyAccMeanZ     
-fBodyAccStdX       
-fBodyAccStdY       
-fBodyAccStdZ        
-fBodyAccMeanFreqX        
-fBodyAccMeanFreqY       
-fBodyAccMeanFreqZ       
-fBodyAccJerkMeanX       
-fBodyAccJerkMeanY       
-fBodyAccJerkMeanZ        
-fBodyAccJerkStdX        
-fBodyAccJerkStdY        
-fBodyAccJerkStdZ        
-fBodyAccJerkMeanFreqX       
-fBodyAccJerkMeanFreqY        
-fBodyAccJerkMeanFreqZ        
-fBodyGyroMeanX       
-fBodyGyroMeanY       
-fBodyGyroMeanZ       
-fBodyGyroStdX      
-fBodyGyroStdY      
-fBodyGyroStdZ       
-fBodyGyroMeanFreqX      
-fBodyGyroMeanFreqY      
-fBodyGyroMeanFreqZ       
-fBodyAccMagMean       
-fBodyAccMagStd       
-fBodyAccMagMeanFreq      
-fBodyBodyAccJerkMagMean      
-fBodyBodyAccJerkMagStd      
-fBodyBodyAccJerkMagMeanFreq     
-fBodyBodyGyroMagMean     
-fBodyBodyGyroMagStd     
-fBodyBodyGyroMagMeanFreq     
-fBodyBodyGyroJerkMagMean     
-fBodyBodyGyroJerkMagStd     
-fBodyBodyGyroJerkMagMeanFreq      
+Step 4: Appropriately Label the Dataset with Descriptive Variable Names
+The allNames variable was subsetted in the same manner as the data. The resulting reducedNames variable was processed in a number of steps: capital letters were applied where appropriate, punctuation was removed, abbreviations "t" and "f" were changed to time and frequency. Finally, theses modified names were applied to the reducedSet.
+
+Step 5: Create tidy data set with average of each variable, by activity, by subject
+The reducedSet from the end of Step 4 was grouped by subject, then by activity, and summarized so that the observations in each row were the means of the variable columns, for that subject/activity. This was accomplished by applying the dply package verbs "group_by" and "summarise_each". The resulting tidy data set was written to a file called "tidyDataset.txt".
+
+# Variables
+Variables: Environment and data source
+today = today's date, later coerced to data and time
+mySystem = description of computer hardware and software used in this analysis
+dataDescription = source project description from UCI Machine Learning Repository
+dataUrl = URL for zip archive of source data
+
+Variables: Imported files named according to sources file names
+activity_labels = six activity codes and corresponding activity names
+features = feature names for X_test, X_train
+
+subject_test = test set subject number, 1-30
+X_test = test set feature measurements
+y_test = test set activity, coded 1-6
+
+Subject_train = train set subject number, 1-30
+X_train = train set feature measurements
+y_train = train set activity, coded 1-6
+
+Variables: Combined data sets
+test = subject_test, y_test, X_test combined, by columns
+train = subject_train, y_train, X_train combined, by columns
+fullSet = test, train, combined by rows
+
+Variables: Column names
+allNames = set of names corresponding to fullSet, not yet applied
+meanStdColumns = subject, activity, and all features with mean or standard deviation
+reducedSet = fullSet subsetted with meanStdColumns
+reducedNames = allNames subsetted with meanStdColumns, renamed to R conventions; applied to reducedSet
+
+Variables: Tidy data set
+tidyDataset = data set with average of each variable, by activity, by subject
