@@ -1,8 +1,15 @@
-# Getting-and-cleaning-data-project
-This is the course project for the Getting and Cleaning Data Coursera course.
-The included R script, run_analysis.R, conducts the following:
-1.Download the dataset from web if it does not already exist in the working directory.
-2.Read both the train and test datasets and merge them into x(measurements), y(activity) and subject, respectively.
-3.Load the data(x's) feature, activity info and extract columns named 'mean'(-mean) and 'standard'(-std). Also, modify column names to descriptive. (-mean to Mean, -std to Std, and remove symbols like -, (, ))
-4.Extract data by selected columns(from step 3), and merge x, y(activity) and subject data. Also, replace y(activity) column to it's name by refering activity label (loaded step 3).
-5.Generate 'Tidy Dataset' that consists of the average (mean) of each variable for each subject and each activity. The result is shown in the file tidy_dataset.txt.
+
+Coursera Data Science Specialization Course Course Project
+
+# Project Description
+This project is an exercise in acquiring and cleaning data. The project uses data from the UCI Machine Learning Repository: Human Activity Recognition and Smart Phone Data site: Description here.. Data for the project can be downloaded here: Zip Archive Download.
+
+# Project Files
+Data Processing Script: run_analysis.R
+The R script run_analysis.R reads the data files and combines them into one full data file. Important variable values are renamed from numbers to meaningful names. The full set of variables is reduced to a subset that involve means and standard deviations. Variable names are changed to conform with R's legal variable names and to be descriptive.
+
+# Tidy Data Output: tidyDataset.txt
+The data is then grouped by subject and activity, and summarized by each variable's mean. The end result is a tidy data set, conforming to Hadley Wickham's tidy data principles Tidy Data. The tidy data set is written to the file tidyDataset.txt.
+
+Data Processing Description and Variable Names: CodeBook.md
+The file CodeBook.md describes the processing steps and variables used in run_analysis.R and supplements the README.txt included in the original downloaded archive.
