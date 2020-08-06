@@ -12,4 +12,4 @@ The R script run_analysis.R reads the data files and combines them into one full
 The data is then grouped by subject and activity, and summarized by each variable's mean. The end result is a tidy data set, conforming to Hadley Wickham's tidy data principles Tidy Data. The tidy data set is written to the file tidyDataset.txt.
 
 Data Processing Description and Variable Names: CodeBook.md
-The file CodeBook.md describes the processing steps and variables used in run_analysis.R and supplements the README.txt included in the original downloaded archive.
+The file CodeBook.md describes the processing steps and variables used in run_analysis.R.
