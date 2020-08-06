@@ -1,71 +1,89 @@
-# run_analysis.R
+#' ---
+#' title: 'Getting and Cleaning Data: Course Project'
+#' author: "Bhavya Agarwal"
+#' date: "`r format(Sys.Date())`"
+#' output: 
+#'   github_document:
+#'     toc: true
+#' ---
+#'
+#+ echo=FALSE
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(lubridate)
+})
 
-#0. prepare LIBs
-library(reshape2)
+#' ## Data Description & Source File URLs
+dataDescription <- "http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones"
+dataUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 
+#' Download and Extract Zip Archive  
+# download.file(dataUrl, destfile = "data.zip")
+# unzip("data.zip")
 
-#1. get dataset from web
-rawDataDir <- "./rawData"
-rawDataUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-rawDataFilename <- "rawData.zip"
-rawDataDFn <- paste(rawDataDir, "/", "rawData.zip", sep = "")
-dataDir <- "./data"
+#' ## Merge training and test sets to create one data set  
 
-if (!file.exists(rawDataDir)) {
-    dir.create(rawDataDir)
-    download.file(url = rawDataUrl, destfile = rawDataDFn)
-}
-if (!file.exists(dataDir)) {
-    dir.create(dataDir)
-    unzip(zipfile = rawDataDFn, exdir = dataDir)
-}
+#' Read Activity and Feature Labels
+activity_labels <- read.table("./UCI HAR Dataset/activity_labels.txt") #V2 contains label
+features <- read.table("./UCI HAR Dataset/features.txt")               #V2 contains feature labels
 
+#' Read Test data 
+subject_test <- read.table("./UCI HAR Dataset/test/subject_test.txt")
+X_test <- read.table("./UCI HAR Dataset/test/X_test.txt")
+y_test <- read.table("./UCI HAR Dataset/test/y_test.txt")
 
-#2. merge {train, test} data set
-# refer: http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
-# train data
-x_train <- read.table(paste(sep = "", dataDir, "/UCI HAR Dataset/train/X_train.txt"))
-y_train <- read.table(paste(sep = "", dataDir, "/UCI HAR Dataset/train/Y_train.txt"))
-s_train <- read.table(paste(sep = "", dataDir, "/UCI HAR Dataset/train/subject_train.txt"))
+#' Read Train data
+subject_train <- read.table("./UCI HAR Dataset/train/subject_train.txt")
+X_train <- read.table("./UCI HAR Dataset/train/X_train.txt")
+y_train <- read.table("./UCI HAR Dataset/train/y_train.txt")
 
-# test data
-x_test <- read.table(paste(sep = "", dataDir, "/UCI HAR Dataset/test/X_test.txt"))
-y_test <- read.table(paste(sep = "", dataDir, "/UCI HAR Dataset/test/Y_test.txt"))
-s_test <- read.table(paste(sep = "", dataDir, "/UCI HAR Dataset/test/subject_test.txt"))
+#' Combine subjects, activity labels, and features into test and train sets
+test  <- cbind(subject_test, y_test, X_test)
+train <- cbind(subject_train, y_train, X_train)
 
-# merge {train, test} data
-x_data <- rbind(x_train, x_test)
-y_data <- rbind(y_train, y_test)
-s_data <- rbind(s_train, s_test)
+#' Combine test and train sets into full data set
+fullSet <- rbind(test, train)
 
+#' ## Extract only measurements on mean and standard deviation  
 
-#3. load feature & activity info
-# feature info
-feature <- read.table(paste(sep = "", dataDir, "/UCI HAR Dataset/features.txt"))
+#' Subset, keeeping mean, std columns; also keep subject, activity columns 
+allNames <- c("subject", "activity", as.character(features$V2))
+meanStdColumns <- grep("subject|activity|[Mm]ean|std", allNames, value = FALSE)
+reducedSet <- fullSet[ ,meanStdColumns]
 
-# activity labels
-a_label <- read.table(paste(sep = "", dataDir, "/UCI HAR Dataset/activity_labels.txt"))
-a_label[,2] <- as.character(a_label[,2])
+#' ## Use descriptive activities names for activity measurements  
 
-# extract feature cols & names named 'mean, std'
-selectedCols <- grep("-(mean|std).*", as.character(feature[,2]))
-selectedColNames <- feature[selectedCols, 2]
-selectedColNames <- gsub("-mean", "Mean", selectedColNames)
-selectedColNames <- gsub("-std", "Std", selectedColNames)
-selectedColNames <- gsub("[-()]", "", selectedColNames)
+#' Use indexing to apply activity names to corresponding activity number
+names(activity_labels) <- c("activityNumber", "activityName")
+reducedSet$V1.1 <- activity_labels$activityName[reducedSet$V1.1]
 
+#' ## Appropriately Label the Dataset with Descriptive Variable Names  
 
-#4. extract data by cols & using descriptive name
-x_data <- x_data[selectedCols]
-allData <- cbind(s_data, y_data, x_data)
-colnames(allData) <- c("Subject", "Activity", selectedColNames)
+#' Use series of substitutions to rename varaiables
+reducedNames <- allNames[meanStdColumns]    # Names after subsetting
+reducedNames <- gsub("mean", "Mean", reducedNames)
+reducedNames <- gsub("std", "Std", reducedNames)
+reducedNames <- gsub("gravity", "Gravity", reducedNames)
+reducedNames <- gsub("[[:punct:]]", "", reducedNames)
+reducedNames <- gsub("^t", "time", reducedNames)
+reducedNames <- gsub("^f", "frequency", reducedNames)
+reducedNames <- gsub("^anglet", "angleTime", reducedNames)
+names(reducedSet) <- reducedNames   # Apply new names to dataframe
 
-allData$Activity <- factor(allData$Activity, levels = a_label[,1], labels = a_label[,2])
-allData$Subject <- as.factor(allData$Subject)
+#' ## Create tidy data set with average of each variable, by activity, by subject  
 
+#' Create tidy data set
+tidyDataset <- reducedSet %>% group_by(activity, subject) %>% 
+  summarise_all(funs(mean))
 
-#5. generate tidy data set
-meltedData <- melt(allData, id = c("Subject", "Activity"))
-tidyData <- dcast(meltedData, Subject + Activity ~ variable, mean)
+#' Write tidy data to ouput file
+write.table(tidyDataset, file = "tidyDataset.txt", row.names = FALSE)
 
-write.table(tidyData, "./tidy_dataset.txt", row.names = FALSE, quote = FALSE)
+# Call to read in tidy data set produced and validate steps
+# validate <- read.table("tidyDataset.txt")
+# View(validate)
+
+#' -------------
+#'  
+#' ## Session info
+sessionInfo()
